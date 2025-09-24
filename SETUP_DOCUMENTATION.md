@@ -1,6 +1,6 @@
-# 📋 Team Delimiters - Hackathon Setup Documentation
+# Team Delimiters - Hackathon Setup Documentation
 
-## 🎯 Project Overview
+## Project Overview
 
 **Team**: Delimiters  
 **Members**: Aryan Dangwal, Prashuk Jain, Tuwshar Ahlawat, Prashuk Jain  
@@ -11,53 +11,53 @@
 
 ---
 
-## ✅ Completed Setup Tasks
+## Completed Setup Tasks
 
 ### 1. **Project Structure & Repository Setup**
-- ✅ **Repository**: `finos-labs/learnaix-h-2025-delimiters`
-- ✅ **README.md**: Updated with hackathon submission template
-- ✅ **Team Information**: Added all team member details
-- ✅ **Git Configuration**: Initial commit completed
-- ✅ **Development Progress Tracking**: Implemented todo system
+- **Repository**: `finos-labs/learnaix-h-2025-delimiters`
+- **README.md**: Updated with hackathon submission template
+- **Team Information**: Added all team member details
+- **Git Configuration**: Initial commit completed
+- **Development Progress Tracking**: Implemented todo system
 
 ### 2. **Snowflake Cloud Environment Setup**
-- ✅ **Free Trial Account**: Created with 30-day trial ($400 credits)
-- ✅ **Account Details**:
-  - Account ID: `HFXWRWP-DQ57467`
+- **Free Trial Account**: Created with 30-day trial ($400 credits)
+- **Account Details**:
+  - Account ID: `[REDACTED]`
   - Region: Asia Pacific (Singapore)
-  - User: `SUKJAIN`
+  - User: `[REDACTED]`
   - Role: `ACCOUNTADMIN` (primary), `MOODLE_ROLE` (project-specific)
 
 ### 3. **Snowflake CLI Configuration**
-- ✅ **Installation**: Snowflake CLI v3.11.0.0 installed via winget
-- ✅ **Connection Setup**: `Natwest_Delimiters` connection configured
-- ✅ **Authentication**: Successfully tested and verified
-- ✅ **Configuration File**: `C:\Users\HP\AppData\Local\snowflake\config.toml`
+- **Installation**: Snowflake CLI v3.11.0.0 installed via winget
+- **Connection Setup**: `Natwest_Delimiters` connection configured
+- **Authentication**: Successfully tested and verified
+- **Configuration File**: `C:\Users\HP\AppData\Local\snowflake\config.toml`
 
 ### 4. **Database & Role Configuration**
-- ✅ **MOODLE_ROLE**: Created with appropriate permissions
-- ✅ **MOODLE_APP Database**: Created and accessible
-- ✅ **PUBLIC Schema**: Default schema configured
-- ✅ **Cortex AI Permissions**: Granted for AI functionality
-- ✅ **Image Repository**: `MOODLE_APP.PUBLIC.IMG` created for containers
-- ✅ **File Stage**: `MOODLE_APP.PUBLIC.MOUNTED` created for data uploads
+- **MOODLE_ROLE**: Created with appropriate permissions
+- **MOODLE_APP Database**: Created and accessible
+- **PUBLIC Schema**: Default schema configured
+- **Cortex AI Permissions**: Granted for AI functionality
+- **Image Repository**: `MOODLE_APP.PUBLIC.IMG` created for containers
+- **File Stage**: `MOODLE_APP.PUBLIC.MOUNTED` created for data uploads
 
 ### 5. **Template Analysis**
-- ✅ **Available Templates Reviewed**:
+- **Available Templates Reviewed**:
   - **With PHP**: `plugin-local-cortexanalyst`, `plugin-block-myplugin`, `plugin-local-helloworld`
   - **Without PHP**: `plugin-local-pyrunner`, `plugin-local-python-cortex`
-- ✅ **Architecture Understanding**: Analyzed deployment patterns and requirements
+- **Architecture Understanding**: Analyzed deployment patterns and requirements
 
 ---
 
-## 🔧 Technical Configuration Details
+## Technical Configuration Details
 
 ### Snowflake Connection Configuration
 ```toml
 [connections.Natwest_Delimiters]
-account = "HFXWRWP-DQ57467"
-user = "SUKJAIN"
-password = "Prasukj@101914"
+account = "[ACCOUNT_ID]"
+user = "[USERNAME]"
+password = "[PASSWORD_REDACTED]"
 role = "ACCOUNTADMIN"
 warehouse = "<none selected>"
 database = "MOODLE_APP"
@@ -89,7 +89,7 @@ SELECT CURRENT_ROLE(), CURRENT_DATABASE(), CURRENT_SCHEMA();
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 learnaix-h-2025-delimiters/
@@ -112,7 +112,7 @@ learnaix-h-2025-delimiters/
 
 ---
 
-## 🎯 Next Steps (Ready to Execute)
+## Next Steps (Ready to Execute)
 
 ### Immediate Tasks
 1. **Define AI Plugin Concept** (In Progress)
@@ -141,34 +141,32 @@ learnaix-h-2025-delimiters/
 
 ---
 
-## 🛠️ Development Environment Status
+## Development Environment Status
 
 | Component | Status | Details |
 |-----------|--------|---------|
-| Git Repository | ✅ Ready | Initial commit completed |
-| Snowflake Account | ✅ Active | 30-day trial with $400 credits |
-| CLI Tools | ✅ Configured | Snowflake CLI v3.11.0.0 working |
-| Database | ✅ Ready | MOODLE_APP database accessible |
-| AI Permissions | ✅ Granted | Cortex AI access configured |
-| Templates | ✅ Available | 5 plugin templates analyzed |
-| Team Setup | ✅ Complete | All team members documented |
+| Git Repository | Ready | Initial commit completed |
+| Snowflake Account | Active | 30-day trial with $400 credits |
+| CLI Tools | Configured | Snowflake CLI v3.11.0.0 working |
+| Database | Ready | MOODLE_APP database accessible |
+| AI Permissions | Granted | Cortex AI access configured |
+| Templates | Available | 5 plugin templates analyzed |
+| Team Setup | Complete | All team members documented |
 
 ---
 
-## 📞 Support Information
+## Support Information
 
 **Primary Contact**: prasukj123@gmail.com  
-**Snowflake Account**: HFXWRWP-DQ57467  
+**Snowflake Account**: [CONFIGURED]  
 **Project Repository**: https://github.com/finos-labs/learnaix-h-2025-delimiters  
-**Setup Date**: September 22, 2025  
-**Documentation Updated**: 23:06 IST  
 
 ---
 
-## 🚀 Ready for Development!
+## Ready for Development!
 
 All infrastructure and setup tasks are complete. The team is ready to proceed with AI plugin development and deployment on Snowflake platform.
 
 **Total Setup Time**: ~2 hours  
-**Status**: ✅ READY TO BUILD  
+**Status**: READY TO BUILD  
 **Next Action**: Choose AI plugin concept and begin development
