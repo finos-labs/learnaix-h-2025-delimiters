@@ -3,6 +3,8 @@
 **AI-Powered Adaptive Learning Roadmaps**  
 Team Delimiters - NatWest Hack4aCause
 
+![AI Study Assistant](AI%20study%20Assistant.png)
+
 ## Overview
 
 LearnPath Navigator is a Moodle plugin that leverages Snowflake Cortex AI to provide personalized learning analytics and adaptive roadmap generation for students. The plugin analyzes student performance data and generates customized study plans using real AI models.
@@ -11,6 +13,7 @@ LearnPath Navigator is a Moodle plugin that leverages Snowflake Cortex AI to pro
 
 - 🤖 **Real AI Analysis**: Powered by Snowflake Cortex AI (mistral-7b, llama3.1, etc.)
 - 📊 **Performance Analytics**: Detailed analysis of student strengths and weaknesses
+- 🧮 **Gradebook Integration**: Pulls live grades and activity completion data directly from Moodle course gradebooks to drive AI insights
 - 🗺️ **Personalized Roadmaps**: Custom learning paths based on individual performance
 - 🎯 **Multi-Profile Support**: Handles struggling, average, and advanced students
 - ⚡ **Real-time Processing**: Live AI responses with intelligent fallbacks
@@ -100,6 +103,13 @@ Moodle Plugin → Snowflake CLI → Snowflake Cortex AI → AI Response
 - **`classes/student_data.php`**: Student data management and AI prompts
 - **`settings.php`**: Admin configuration panel
 - **`version.php`**: Plugin metadata and version info
+
+### Moodle Gradebook Integration
+
+- **Live Grade Sync**: `classes/student_data.php` calls Moodle's gradebook APIs to pull the latest course grades, quiz attempts, and activity completions for the selected learner.
+- **Performance Hashing**: Roadmap persistence leverages a score hash to detect grade changes, automatically triggering roadmap regeneration when fresh gradebook data arrives.
+- **Dashboards & AI Context**: The analytics dashboard and Snowflake prompts include grade averages, weak-topic detection, and completion gaps sourced directly from Moodle grade tables.
+- **Role-Aware Access**: Capability checks in `index.php` ensure only permitted teachers or admins can view aggregated grade analytics, while students see only their own performance footprints.
 
 ## Configuration Files
 
