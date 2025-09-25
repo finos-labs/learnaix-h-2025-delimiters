@@ -1,0 +1,157 @@
+LEARNPATH NAVIGATOR - DEMO RUNBOOK (TXT)
+
+Purpose
+- A concise step-by-step guide to run a compelling demo of the LearnPath Navigator plugin with three student scenarios.
+- Includes the narrative script, exact pages to open, and a technical deep-dive (Snowflake Cortex, models, endpoints, data flow).
+
+URLs (default localhost)
+- LearnPath Navigator UI: http://localhost/moodle/local/learnpath/index.php
+- Check existing data:    http://localhost/moodle/local/learnpath/check_existing_data.php
+- Setup simple demo:      http://localhost/moodle/local/learnpath/setup_simple_demo.php
+- Fix grade structure:    http://localhost/moodle/local/learnpath/fix_grade_structure.php
+- Realistic demo (optional): http://localhost/moodle/local/learnpath/setup_realistic_demo.php
+
+One-time Preparation (5–7 min)
+1) Verify base data
+   - Open: check_existing_data.php
+   - Confirm courses exist: AD101 (Algorithmic Design), DSA101 (Data Structures and Algorithms), AIDEMO (AI Fundamentals Demo).
+
+2) Create sample grades (uses existing courses; adds items + grades)
+   - Open: setup_simple_demo.php
+   - This enrolls students (if needed) and creates minimal, clean grade items with a 10-point scale.
+
+3) Repair grade structures if needed
+   - Open: fix_grade_structure.php
+   - This rebuilds course grade categories and reassigns items to eliminate “Attempt to modify property 'children' on null”.
+
+4) Open plugin
+   - Open: index.php
+   - In Data Source, select: Live Moodle Data.
+
+Demo Scenarios (10–12 min total)
+Scenario 1 — Sarah Martinez (Struggling student)
+- Course: Algorithmic Design (AD101)
+- Grades (examples): 3.5/10, 2.8/10, 4.2/10
+- What to show
+  - Dashboard: low overall %, weak areas visible.
+  - Roadmap: click Generate; model returns 3 concise modules tailored to weak areas.
+  - Resources: click Get AI Recommendations; short list of high-quality links.
+  - Chat: ask “Explain arrays simply” or “Create a 1-week recovery plan for me”.
+- Value message
+  - Early warning, supportive tone, foundational learning path, targeted resources.
+
+Scenario 2 — Alex Johnson (Improving student)
+- Course: AI Fundamentals Demo (AIDEMO)
+- Pattern: strong theory (quizzes), weaker implementation (project)
+- What to show
+  - Dashboard: mixed scores, overall ~70% range.
+  - Roadmap: 3 modules balancing reinforcement + practice.
+  - Resources: hands-on ML tutorials.
+  - Chat: “How can I improve neural network implementation?”
+- Value message
+  - Pattern detection (theory vs practice), balanced roadmap, practical guidance.
+
+Scenario 3 — David Chen (High achiever)
+- Courses: AD101, DSA101 (optionally AIDEMO)
+- Pattern: 9.4–9.8/10 across items
+- What to show
+  - Dashboard: excellent, green indicators.
+  - Roadmap: advanced, challenge-oriented modules.
+  - Resources: MIT OCW/research papers.
+  - Chat: “Suggest advanced topics/open-source projects aligned to my skills.”
+- Value message
+  - Enrichment focus, research-level guidance, career-oriented mentoring.
+
+Narration Script (short)
+- Opening (30s): “This is LearnPath Navigator—an AI assistant for Moodle that turns raw gradebook data into personalized guidance.”
+- Sarah (3–4 min): “Here’s a struggling student. Notice real grades flow into the dashboard. The roadmap proposes foundational modules, and chat explains core concepts simply.”
+- Alex (3–4 min): “For Alex, AI sees theory > practice. Roadmap and resources focus on implementation. Chat gives hands-on steps.”
+- David (2–3 min): “For David, AI switches to enrichment—advanced modules, research resources, and mentorship-like guidance.”
+- Closing (30s): “Same AI, different answers—fully data-driven, personalized, and scalable.”
+
+How It Works (Technical)
+Frontend (local/learnpath/scripts.js)
+- Dashboard data: populated from currentStudentData (built from Moodle grades).
+- Roadmap
+  - Function: generateRoadmap()
+  - Sends POST to ajax.php
+    - Demo mode: action=generate_roadmap
+    - Live data: action=generate_real_roadmap (userid, courseid, prompt)
+  - Parsing: parseRoadmapModules(response)
+    - Expects exactly 3 lines: Title|Duration|Lessons|Skills
+- Resources
+  - Function: getRecommendations()
+  - Sends POST to ajax.php action=get_recommendations
+  - Presents short, curated list (YouTube, Coursera, OCW), validated URLs.
+- Chat
+  - Function: sendChatMessage() -> sendToAI(message)
+  - Sends POST to ajax.php action=chat_message (userid, courseid, prompt)
+
+Backend Endpoints (local/learnpath/ajax.php)
+- action=generate_roadmap (demo)
+  - Uses student_data::generate_roadmap_prompt()
+  - Snowflake model: llama3-8b
+- action=generate_real_roadmap (live)
+  - Uses student_data::get_real_student_data() + generate_roadmap_prompt()
+  - Snowflake model: llama3-8b
+  - Debug fields: debug_prompt, debug_student_data (visible in network inspector)
+- action=get_recommendations
+  - Uses student_data::generate_improvement_recommendations()
+  - Snowflake model: llama3-8b
+- action=chat_message
+  - Builds a full context prompt from real student data (name, overall, detailed scores, weak/strong areas, study streak/hours, last login)
+  - Snowflake model: llama3-8b
+
+Student Data Aggregation (local/learnpath/classes/student_data.php)
+- get_real_student_data($userid, $courseid)
+  - Loads course + user
+  - Reads grade items for types: 'mod' and 'manual'
+  - Computes per-item percentages and overall average
+  - Returns: id, name, avatar, grade, overall, scores{}, streak, message, quiz_attempts, study_hours, last_login
+- generate_roadmap_prompt($studentData)
+  - Compact, parser-friendly prompt that returns exactly 3 lines: Title|Duration|Lessons|Skills
+  - Includes weak areas and learning level (Struggling/Improving/Advanced)
+- generate_improvement_recommendations($studentData)
+  - Summarizes weak subjects with short, actionable asks (kept under ~200 words by the model)
+
+Snowflake Cortex Integration (local/learnpath/classes/snowflake_connector.php)
+- Method: execute_cortex_query($model, $prompt)
+  - INPUT: model (string), prompt (string)
+  - OUTPUT: [success(bool), response(string), model, method, error, fallback(bool)]
+  - Models used in this build: llama3-8b (chat, roadmap, recommendations)
+  - Fallback: generate_fallback_response($prompt) when Snowflake call fails
+- Configuration
+  - Ensure Snowflake account, warehouse, database, and Cortex are configured via plugin settings (not stored in code).
+  - Network egress must allow Snowflake access.
+
+Troubleshooting
+- Grades page error: “Attempt to modify property 'children' on null”
+  - Run: fix_grade_structure.php
+  - Then re-open the Grades page and the plugin.
+- Overall score shows 0% in plugin but grades exist in Moodle
+  - Verify student_data.php reads both 'mod' and 'manual' items (it does in this build).
+- Roadmap shows fallback text
+  - Roadmap endpoints in ajax.php use llama3-8b and a concise, parser-friendly prompt.
+  - Inspect browser network response: look for 'fallback': false and a 3-line response with '|'.
+  - If fallback=true, check Snowflake connectivity/credentials and reduce prompt length further.
+- Chat or recommendations time out
+  - Verify Snowflake credentials in plugin settings.
+  - Check server error log for "REAL ROADMAP PROMPT" / "ROADMAP RESULT" debug lines.
+
+Live Demo Checklist (90 seconds before start)
+- Login as admin/instructor.
+- Load index.php with Data Source = Live Moodle Data.
+- Pre-select:
+  - Algorithmic Design + Sarah Martinez (struggling)
+  - AI Fundamentals Demo + Alex Johnson (improving)
+  - Data Structures + David Chen (high achiever)
+- Open Moodle Grades tab for AD101 in a separate tab in case audience requests proof.
+- Keep Network tab open to show the AI JSON if needed (proof of live AI).
+
+Q&A Talking Points
+- Security: No student PII sent beyond what is constructed in prompts; deploy behind HTTPS; use role-based capability checks in Moodle.
+- Cost control: Batch prompts; short prompts; model selection (llama3-8b) for balanced cost/quality.
+- Extensibility: Add rubric-aware feedback, due-date planning, and calendar integration.
+- Data sources: Extend beyond grades (activity logs, attendance) to refine learning plans.
+
+End of file.

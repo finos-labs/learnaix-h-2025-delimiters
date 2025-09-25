@@ -22,21 +22,21 @@ if ($hassiteconfig) {
     $settings->add(new admin_setting_configtext('local_learnpath/snowflake_cli_path',
         get_string('snowflake_cli_path', 'local_learnpath'),
         get_string('snowflake_cli_path_desc', 'local_learnpath'),
-        '/usr/local/bin/snow',
+        'snow',
         PARAM_TEXT));
     
     // Snowflake Connection Name
     $settings->add(new admin_setting_configtext('local_learnpath/snowflake_connection',
         get_string('snowflake_connection', 'local_learnpath'),
         get_string('snowflake_connection_desc', 'local_learnpath'),
-        'LEARNAIX_CONNECTION',
+        'default',
         PARAM_TEXT));
     
     // Snowflake Config Path
     $settings->add(new admin_setting_configtext('local_learnpath/snowflake_config_path',
         get_string('snowflake_config_path', 'local_learnpath'),
         get_string('snowflake_config_path_desc', 'local_learnpath'),
-        '/opt/snowflake/config',
+        '',
         PARAM_TEXT));
     
     // AI Model Selection

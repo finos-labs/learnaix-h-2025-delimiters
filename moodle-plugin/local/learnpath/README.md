@@ -52,9 +52,9 @@ cp -r learnpath/ /Applications/MAMP/htdocs/moodle/local/
 
 1. Go to **Site Administration → Plugins → Local plugins → LearnPath Navigator**
 2. Configure the following settings:
-   - **Snowflake CLI Path**: Path to snow.exe (e.g., `C:\Program Files\Snowflake CLI\snow.exe`)
-   - **Snowflake Connection**: Your connection name (e.g., `Natwest_Delimiters`)
-   - **Snowflake Config Path**: Path to config directory (e.g., `C:\Users\HP\AppData\Local\snowflake`)
+   - **Snowflake CLI Path**: Path to snow executable (default: `snow`)
+   - **Snowflake Connection**: Your connection name (default: `default`)
+   - **Snowflake Config Path**: Path to config directory (optional)
    - **AI Model**: Select preferred model (mistral-7b recommended)
    - **Enable AI Features**: Check to enable AI functionality
 
@@ -106,21 +106,21 @@ Moodle Plugin → Snowflake CLI → Snowflake Cortex AI → AI Response
 ### Snowflake CLI Setup
 Ensure your Snowflake CLI is configured with:
 ```toml
-[connections.Natwest_Delimiters]
-account = "HFXWRWP-DQ57467"
-user = "SUKJAIN"
+[connections.your_connection_name]
+account = "your_account_id"
+user = "your_username"
 password = "your_password"
-role = "MOODLE_ROLE"
-database = "MOODLE_APP"
+role = "your_role"
+database = "your_database"
 schema = "PUBLIC"
-warehouse = "COMPUTE_WH"
+warehouse = "your_warehouse"
 ```
 
 ### Required Snowflake Permissions
 ```sql
 USE ROLE ACCOUNTADMIN;
 ALTER ACCOUNT SET ENABLE_CROSS_REGION_CORTEX_CALLS = TRUE;
-GRANT DATABASE ROLE SNOWFLAKE.CORTEX_USER TO ROLE MOODLE_ROLE;
+GRANT DATABASE ROLE SNOWFLAKE.CORTEX_USER TO ROLE your_role;
 ```
 
 ## Troubleshooting

@@ -32,11 +32,11 @@ class student_data {
             return null;
         }
         
-        // Get grade items for the course
-        $grade_items = $DB->get_records('grade_items', [
-            'courseid' => $courseid,
-            'itemtype' => 'mod'
-        ]);
+        // Get grade items for the course (both module and manual items)
+        $grade_items = $DB->get_records_select('grade_items', 
+            'courseid = ? AND itemtype IN (?, ?)', 
+            [$courseid, 'mod', 'manual']
+        );
         
         $scores = [];
         $total_attempts = 0;
@@ -57,10 +57,22 @@ class student_data {
         // Get quiz attempts (if any)
         $quiz_attempts = $DB->count_records('quiz_attempts', ['userid' => $userid]);
         
+        // Calculate overall score
+        $overall_score = 0;
+        if (!empty($scores)) {
+            $overall_score = round(array_sum($scores) / count($scores));
+        }
+        
         return [
             'id' => 'user_' . $userid,
             'name' => fullname($user),
+            'avatar' => strtoupper(substr($user->firstname, 0, 1) . substr($user->lastname, 0, 1)),
+            'grade' => 'Student',
+            'overall' => $overall_score,
             'scores' => $scores,
+            'streak' => rand(1, 10), // Simulated streak
+            'message' => $overall_score >= 80 ? 'Excellent performance!' : 
+                        ($overall_score >= 60 ? 'Good progress, keep it up!' : 'Focus on improvement areas'),
             'quiz_attempts' => $quiz_attempts,
             'study_hours' => rand(20, 50), // Simulated for demo
             'last_login' => date('Y-m-d H:i:s', $user->lastlogin)
@@ -160,31 +172,55 @@ class student_data {
     }
     
     /**
-     * Generate comprehensive roadmap prompt for AI
+     * Generate roadmap prompt compatible with JavaScript parsing
      */
     public static function generate_roadmap_prompt($studentData, $focusArea = 'general improvement') {
         $scores = $studentData['scores'];
         $avg_score = count($scores) > 0 ? round(array_sum($scores) / count($scores), 1) : 0;
         
-        // Identify priority areas
-        $priority_subjects = [];
-        $advanced_subjects = [];
-        
-        foreach ($scores as $subject => $score) {
-            if ($score < 70) {
-                $priority_subjects[] = "$subject ($score% - Needs Focus)";
-            } elseif ($score >= 85) {
-                $advanced_subjects[] = "$subject ($score% - Advanced)";
+        // Get weak areas for focus
+        $weak_areas = [];
+        if (!empty($scores)) {
+            foreach ($scores as $subject => $score) {
+                if ($score < 60) {
+                    $weak_areas[] = $subject;
+                }
             }
         }
         
-        $prompt = "Create 4-week study plan for {$studentData['name']}: Average {$avg_score}%, {$studentData['study_hours']} hours/week. ";
+        // Create prompt that matches JavaScript expectations
+        $prompt = "Generate exactly 3 learning modules for {$studentData['name']}. Return ONLY 3 lines in this exact format:\n";
+        $prompt .= "Title|Duration|Lessons|Skills\n\n";
+        $prompt .= "Example:\n";
+        $prompt .= "Master Quadratic Equations|2 weeks|12 lessons|Algebra,Factoring,Graphing\n";
+        $prompt .= "Complete Physics Problems|3 weeks|15 lessons|Mechanics,Forces,Motion\n";
+        $prompt .= "Improve Essay Writing|1 week|8 lessons|Writing,Analysis,Grammar\n\n";
         
-        if (!empty($priority_subjects)) {
-            $prompt .= "Focus on: " . implode(', ', $priority_subjects) . ". ";
+        // Student context
+        $prompt .= "Student: {$studentData['name']}\n";
+        $prompt .= "Performance: {$avg_score}% overall\n";
+        $prompt .= "Study hours: {$studentData['study_hours']}/week\n";
+        
+        if (!empty($scores)) {
+            $prompt .= "Current grades: " . json_encode($scores) . "\n";
         }
         
-        $prompt .= "Provide weekly breakdown: Week 1-4 goals, daily tasks, study techniques, progress milestones. Keep under 300 words.";
+        if (!empty($weak_areas)) {
+            $prompt .= "Focus on weak areas: " . implode(', ', $weak_areas) . "\n";
+        } else {
+            $prompt .= "Focus on skill enhancement\n";
+        }
+        
+        // Learning level context
+        if ($avg_score < 40) {
+            $prompt .= "Level: Struggling - create foundational modules\n";
+        } elseif ($avg_score < 75) {
+            $prompt .= "Level: Improving - create balanced modules\n";
+        } else {
+            $prompt .= "Level: Advanced - create challenging modules\n";
+        }
+        
+        $prompt .= "\nCreate 3 specific learning modules. Return exactly 3 lines with pipe separators, nothing else.";
         
         return $prompt;
     }

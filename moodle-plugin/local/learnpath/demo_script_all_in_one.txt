@@ -1,0 +1,120 @@
+LEARNPATH NAVIGATOR - PRESENTER SCRIPT (ALL-IN-ONE)
+
+GOAL
+- This script helps you explain the problem, show three student scenarios, perform the live demo, and answer technical questions in 8–12 minutes.
+
+PREP (1–2 MIN BEFORE)
+- Open: http://localhost/moodle/local/learnpath/index.php
+- Set Data Source: Live Moodle Data
+- Prepare course/student presets in three separate tabs
+  1) Algorithmic Design + Sarah Martinez (struggling)
+  2) AI Fundamentals Demo + Alex Johnson (improving)
+  3) Data Structures and Algorithms + David Chen (high achiever)
+- (Backup) Moodle Grades tab for AD101 to prove real data if asked.
+
+OPENING (30–45 SEC)
+- “LearnPath Navigator is an AI copilot for Moodle. It reads real gradebook data and instantly provides personalized roadmaps, targeted resources, and conversational tutoring—tailored to each student’s strengths and gaps.”
+
+STRUCTURE (5 SEC)
+- “I’ll show you three real scenarios: struggling, improving, and high-achieving students. Notice how the AI adapts to each case.”
+
+SCENARIO 1 — SARAH MARTINEZ (STRUGGLING) — 3–4 MIN
+Context
+- Course: Algorithmic Design (AD101).
+- Data proof (optional): Open Grades tab; see items like Sorting Algorithms Quiz (3.5/10), Array Operations Test (2.8/10), Loop Structures Assignment (4.2/10).
+
+Demo Steps
+1) Dashboard
+   - Point to overall score ≈ 35% and clearly visible weak areas.
+   - Call out “This is live Moodle data, not mockups.”
+2) Roadmap (click Generate Roadmap)
+   - Expect 3 lines in the format: Title|Duration|Lessons|Skills
+   - Example outcomes: “Foundations of Arrays|1 week|8 lessons|Arrays, Indexing, Traversal”
+   - Explain: “The modules are derived from actual weak areas and the course context.”
+3) Resources (click Get AI Recommendations)
+   - Show 4–6 concise links (Coursera, YouTube, OCW). Short, high-signal picks.
+4) Chat (ask)
+   - “Explain arrays simply, then give 2 practice tasks I can do today.”
+   - Note the supportive tone designed for struggling learners.
+
+Key Message
+- Early warning + foundation-first study plan + concrete resources + encouraging tutor—fully driven by her actual grades.
+
+SCENARIO 2 — ALEX JOHNSON (IMPROVING) — 3–4 MIN
+Context
+- Course: AI Fundamentals Demo (AIDEMO).
+- Pattern: Strong theory (quizzes), weaker implementation (project).
+
+Demo Steps
+1) Dashboard
+   - Overall ~70% range; mixed bars.
+   - “The system detects a ‘theory > practice’ pattern.”
+2) Roadmap
+   - Balanced modules: implementation labs, small projects, code reviews.
+3) Resources
+   - Practical ML tutorials, hands-on repos, fast feedback cycles.
+4) Chat (ask)
+   - “How do I improve my neural network implementation?”
+   - Expect actionable, analytical steps (not generic advice).
+
+Key Message
+- Pattern recognition → Balanced roadmap → Practical, targeted guidance.
+
+SCENARIO 3 — DAVID CHEN (HIGH ACHIEVER) — 2–3 MIN
+Context
+- Courses: AD101, DSA101 (optionally AIDEMO).
+- Consistent 9.4–9.8/10 performance.
+
+Demo Steps
+1) Dashboard
+   - Green indicators; highlight cross-course consistency.
+2) Roadmap
+   - Advanced challenges: algorithm optimization, research themes, leadership.
+3) Resources
+   - MIT OCW, research papers, curated advanced playlists.
+4) Chat (ask)
+   - “Suggest open-source projects or research problems aligned to my strengths.”
+
+Key Message
+- For top students, the AI becomes a mentor—recommendations shift to enrichment and growth pathways.
+
+TECHNICAL EXPLANATION (60–90 SEC)
+Data Pipeline (High-Level)
+- Frontend (`local/learnpath/scripts.js`) collects `currentStudentData`.
+- Backend (`local/learnpath/ajax.php`) endpoints:
+  - `action=generate_real_roadmap` → uses `student_data::get_real_student_data()` then `student_data::generate_roadmap_prompt()`
+  - `action=get_recommendations` → uses `student_data::generate_improvement_recommendations()`
+  - `action=chat_message` → builds a full context prompt with scores, weak/strong areas, streak, study hours
+- Snowflake Cortex integration (`classes/snowflake_connector.php`):
+  - `execute_cortex_query('llama3-8b', $prompt)`
+  - Returns structured JSON: success, response, model, method, fallback
+  - Intelligent fallback only triggers on Snowflake errors; otherwise real LLM output is used.
+
+Prompting Strategy (Roadmap)
+- JavaScript expects exactly 3 lines: `Title|Duration|Lessons|Skills`.
+- `student_data::generate_roadmap_prompt()` now constructs a concise, parser-friendly prompt including:
+  - Student name, overall %, weak areas, study hours
+  - Learning level (Struggling/Improving/Advanced)
+  - Clear instruction to return exactly 3 lines with `|` separators
+
+Models & Terms (callout)
+- Model: `llama3-8b` via Snowflake Cortex (balanced cost/quality, good for structured outputs)
+- Endpoint: server-side PHP → `snowflake_connector::execute_cortex_query()` (configured in plugin settings)
+- Data: Grades read from Moodle tables `grade_items` (types: `mod`, `manual`) and `grade_grades`; normalized to percentages
+
+TROUBLESHOOTING (30–45 SEC)
+- Grades page error: “Attempt to modify property 'children' on null” → run `fix_grade_structure.php`.
+- 0% overall in plugin despite grades → ensure `student_data.php` reads both `mod` and `manual` items (it does).
+- Roadmap shows fallback → check Snowflake connectivity; the prompt is optimized to be short and parser-friendly; inspect Network tab (`debug_prompt`).
+
+CLOSING (20–30 SEC)
+- “Same AI, different answers—because it’s grounded in each student’s real data. LearnPath Navigator scales personal tutoring across an entire cohort.”
+
+APPENDIX (OPTIONAL)
+Exact Endpoints to Reference During Q&A
+- Roadmap (live): POST `ajax.php?action=generate_real_roadmap&userid=<id>&courseid=<id>&prompt=<...>`
+- Roadmap (demo): POST `ajax.php?action=generate_roadmap&profile=<demo>&prompt=<...>`
+- Recommendations: POST `ajax.php?action=get_recommendations&userid=<id>&courseid=<id>`
+- Chat: POST `ajax.php?action=chat_message&userid=<id>&courseid=<id>&message=<msg>`
+
+End of script.

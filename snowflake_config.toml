@@ -1,0 +1,88 @@
+# Snowflake CLI Configuration for LearnPath Navigator
+# Team Delimiters - NatWest Hack4aCause
+# 
+# INSTRUCTIONS:
+# 1. Copy this file to: C:\Users\%USERNAME%\AppData\Local\snowflake\config.toml (Windows)
+#    OR ~/.snowflake/config.toml (Linux/macOS)
+# 2. Replace placeholders with your actual Snowflake credentials
+# 3. Test connection: snow connection test LEARNAIX_CONNECTION
+
+[connections.LEARNAIX_CONNECTION]
+# Replace with your Snowflake account identifier
+account = "your-account.snowflakecomputing.com"
+
+# Replace with your Snowflake username
+user = "your_username"
+
+# Replace with your Snowflake password
+password = "your_password"
+
+# Role with Cortex AI permissions
+role = "MOODLE_ROLE"
+
+# Warehouse for compute resources
+warehouse = "MOODLE_WH"
+
+# Database for LearnPath Navigator
+database = "MOODLE_DB"
+
+# Schema for tables and functions
+schema = "MOODLE_SCHEMA"
+
+[connections.LEARNAIX_CONNECTION.options]
+# Authentication method (default: snowflake)
+authenticator = "snowflake"
+
+# Connection timeout in seconds
+login_timeout = 60
+
+# Network timeout in seconds
+network_timeout = 300
+
+# Enable query result caching
+query_tag = "LearnPath_Navigator"
+
+# Optional: MFA settings (uncomment if using MFA)
+# passcode_in_password = false
+# passcode = "your_mfa_code"
+
+# Optional: Private key authentication (uncomment if using key-pair auth)
+# private_key_path = "/path/to/your/private_key.p8"
+# private_key_passphrase = "your_passphrase"
+
+# CLI Global Settings
+[cli]
+# Default connection to use
+default_connection = "LEARNAIX_CONNECTION"
+
+# Log level: DEBUG, INFO, WARNING, ERROR
+log_level = "INFO"
+
+# Output format: table, json, csv
+output_format = "table"
+
+# Enable colored output
+color = true
+
+# Connection timeout
+connection_timeout = 60
+
+# Query timeout in seconds
+query_timeout = 300
+
+# Optional: Proxy settings (uncomment if behind corporate proxy)
+# [cli.proxy]
+# http = "http://proxy.company.com:8080"
+# https = "https://proxy.company.com:8080"
+# no_proxy = "localhost,127.0.0.1,.company.com"
+
+# Environment-specific configurations
+[environments.development]
+connection = "LEARNAIX_CONNECTION"
+database = "MOODLE_DB_DEV"
+schema = "DEV_SCHEMA"
+
+[environments.production]
+connection = "LEARNAIX_CONNECTION"
+database = "MOODLE_DB_PROD"
+schema = "PROD_SCHEMA"

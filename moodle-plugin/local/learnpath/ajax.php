@@ -42,6 +42,7 @@ try {
             ]);
             break;
             
+        case 'get_student_data':
         case 'get_real_student':
             $userid = required_param('userid', PARAM_INT);
             $courseid = required_param('courseid', PARAM_INT);
@@ -61,6 +62,29 @@ try {
             }
             break;
             
+        case 'get_courses':
+            // Get all courses
+            $courses = $DB->get_records_sql("
+                SELECT id, shortname, fullname
+                FROM {course}
+                WHERE id > 1
+                ORDER BY shortname
+            ");
+            
+            if ($courses) {
+                echo json_encode([
+                    'success' => true,
+                    'courses' => array_values($courses)
+                ]);
+            } else {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'No courses found'
+                ]);
+            }
+            break;
+            
+        case 'get_students':
         case 'get_course_students':
             $courseid = required_param('courseid', PARAM_INT);
             
@@ -148,21 +172,69 @@ try {
             // Generate roadmap prompt
             $prompt = student_data::generate_roadmap_prompt($studentData, 'general improvement');
             
+            // Debug: Log the prompt being sent
+            error_log("ROADMAP PROMPT: " . $prompt);
+            
             // Execute AI roadmap generation
             $connector = new snowflake_connector();
-            $result = $connector->execute_cortex_query('mistral-7b', $prompt);
+            $result = $connector->execute_cortex_query('llama3-8b', $prompt);
+            
+            // Debug: Log the result
+            error_log("ROADMAP RESULT: " . json_encode($result));
             
             echo json_encode([
                 'success' => $result['success'],
-                'response' => $result['response'],
-                'model' => $result['model'] ?? 'mistral-7b',
+                'roadmap' => $result['response'],
+                'model' => $result['model'] ?? 'llama3-8b',
                 'method' => $result['method'] ?? 'real_snowflake_cortex',
                 'error' => $result['error'] ?? null,
-                'fallback' => $result['fallback'] ?? false
+                'fallback' => $result['fallback'] ?? false,
+                'debug_prompt' => $prompt // Add for debugging
             ]);
             break;
             
         case 'generate_real_roadmap':
+            $userid = required_param('userid', PARAM_INT);
+            $courseid = required_param('courseid', PARAM_INT);
+            $studentData = student_data::get_real_student_data($userid, $courseid);
+            
+            if ($studentData) {
+                // Use custom prompt from JavaScript if provided, otherwise generate default
+                $prompt = optional_param('prompt', '', PARAM_TEXT);
+                if (empty($prompt)) {
+                    $prompt = student_data::generate_roadmap_prompt($studentData, 'general improvement');
+                }
+                
+                // Debug: Log the real data prompt
+                error_log("REAL ROADMAP PROMPT: " . $prompt);
+                error_log("REAL STUDENT DATA: " . json_encode($studentData));
+                
+                // Execute AI roadmap generation
+                $connector = new snowflake_connector();
+                $result = $connector->execute_cortex_query('llama3-8b', $prompt);
+                
+                // Debug: Log the result
+                error_log("REAL ROADMAP RESULT: " . json_encode($result));
+                
+                echo json_encode([
+                    'success' => $result['success'],
+                    'roadmap' => $result['response'],
+                    'model' => $result['model'] ?? 'llama3-8b',
+                    'method' => $result['method'] ?? 'real_snowflake_cortex',
+                    'error' => $result['error'] ?? null,
+                    'fallback' => $result['fallback'] ?? false,
+                    'debug_prompt' => $prompt,
+                    'debug_student_data' => $studentData
+                ]);
+            } else {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Student data not found'
+                ]);
+            }
+            break;
+            
+        case 'generate_real_roadmap_old':
             $userid = required_param('userid', PARAM_INT);
             $courseid = required_param('courseid', PARAM_INT);
             $studentData = student_data::get_real_student_data($userid, $courseid);
@@ -205,17 +277,20 @@ try {
             }
             
             if ($studentData) {
-                // Generate improvement recommendations prompt
-                $prompt = student_data::generate_improvement_recommendations($studentData);
+                // Use custom prompt from JavaScript if provided, otherwise generate default
+                $prompt = optional_param('prompt', '', PARAM_TEXT);
+                if (empty($prompt)) {
+                    $prompt = student_data::generate_improvement_recommendations($studentData);
+                }
                 
-                // Execute AI analysis
+                // Execute AI analysis with a model better suited for structured responses
                 $connector = new snowflake_connector();
-                $result = $connector->execute_cortex_query('mistral-7b', $prompt);
+                $result = $connector->execute_cortex_query('llama3-8b', $prompt);
                 
                 echo json_encode([
                     'success' => $result['success'],
-                    'response' => $result['response'],
-                    'model' => $result['model'] ?? 'mistral-7b',
+                    'recommendations' => $result['response'],
+                    'model' => $result['model'] ?? 'llama3-8b',
                     'method' => $result['method'] ?? 'real_snowflake_cortex',
                     'error' => $result['error'] ?? null,
                     'fallback' => $result['fallback'] ?? false
@@ -233,6 +308,129 @@ try {
             $result = $connector->test_connection();
             
             echo json_encode($result);
+            break;
+            
+        case 'chat_message':
+            // Handle both demo and real data for chatbot
+            $message = required_param('message', PARAM_TEXT);
+            $prompt = optional_param('prompt', '', PARAM_TEXT);
+            
+            if (isset($_POST['profile'])) {
+                // Demo data
+                $profile = required_param('profile', PARAM_ALPHA);
+                $studentData = student_data::get_student_data($profile);
+            } else {
+                // Real data
+                $userid = required_param('userid', PARAM_INT);
+                $courseid = required_param('courseid', PARAM_INT);
+                $studentData = student_data::get_real_student_data($userid, $courseid);
+            }
+            
+            if ($studentData) {
+                // Create comprehensive context-aware prompt with all student data
+                $contextPrompt = "You are an AI Study Assistant helping a student. Here is their complete profile:\n\n";
+                
+                // Student Identity
+                $contextPrompt .= "STUDENT PROFILE:\n";
+                $contextPrompt .= "- Name: " . $studentData['name'] . "\n";
+                $contextPrompt .= "- Grade Level: " . $studentData['grade'] . "\n";
+                $contextPrompt .= "- Overall Performance: " . $studentData['overall'] . "%\n\n";
+                
+                // Performance Data
+                if (!empty($studentData['scores'])) {
+                    $contextPrompt .= "DETAILED GRADES:\n";
+                    foreach ($studentData['scores'] as $subject => $score) {
+                        $status = $score >= 80 ? "Excellent" : ($score >= 60 ? "Good" : "Needs Improvement");
+                        $contextPrompt .= "- {$subject}: {$score}% ({$status})\n";
+                    }
+                    $contextPrompt .= "\n";
+                    
+                    // Identify weak and strong areas
+                    $weakAreas = array_filter($studentData['scores'], function($score) { return $score < 60; });
+                    $strongAreas = array_filter($studentData['scores'], function($score) { return $score >= 80; });
+                    
+                    if (!empty($weakAreas)) {
+                        $contextPrompt .= "WEAK AREAS (Need Focus):\n";
+                        foreach ($weakAreas as $subject => $score) {
+                            $contextPrompt .= "- {$subject}: {$score}%\n";
+                        }
+                        $contextPrompt .= "\n";
+                    }
+                    
+                    if (!empty($strongAreas)) {
+                        $contextPrompt .= "STRONG AREAS (Build Upon):\n";
+                        foreach ($strongAreas as $subject => $score) {
+                            $contextPrompt .= "- {$subject}: {$score}%\n";
+                        }
+                        $contextPrompt .= "\n";
+                    }
+                }
+                
+                // Study Patterns
+                if (isset($studentData['streak'])) {
+                    $contextPrompt .= "STUDY PATTERNS:\n";
+                    $contextPrompt .= "- Current Study Streak: " . $studentData['streak'] . " days\n";
+                }
+                if (isset($studentData['study_hours'])) {
+                    $contextPrompt .= "- Weekly Study Hours: " . $studentData['study_hours'] . " hours\n";
+                }
+                if (isset($studentData['quiz_attempts'])) {
+                    $contextPrompt .= "- Total Quiz Attempts: " . $studentData['quiz_attempts'] . "\n";
+                }
+                if (isset($studentData['last_login'])) {
+                    $contextPrompt .= "- Last Login: " . $studentData['last_login'] . "\n";
+                }
+                $contextPrompt .= "\n";
+                
+                // Performance Analysis
+                $contextPrompt .= "PERFORMANCE ANALYSIS:\n";
+                if ($studentData['overall'] < 40) {
+                    $contextPrompt .= "- Status: STRUGGLING - Needs intensive support and encouragement\n";
+                    $contextPrompt .= "- Focus: Basic concepts, foundational skills, confidence building\n";
+                    $contextPrompt .= "- Approach: Break down complex topics, provide step-by-step guidance\n";
+                } elseif ($studentData['overall'] < 75) {
+                    $contextPrompt .= "- Status: IMPROVING - Shows potential with targeted help\n";
+                    $contextPrompt .= "- Focus: Strengthen weak areas while building on strengths\n";
+                    $contextPrompt .= "- Approach: Balanced support with practical applications\n";
+                } else {
+                    $contextPrompt .= "- Status: HIGH ACHIEVER - Ready for advanced challenges\n";
+                    $contextPrompt .= "- Focus: Enrichment, advanced topics, career guidance\n";
+                    $contextPrompt .= "- Approach: Sophisticated mentoring and growth opportunities\n";
+                }
+                $contextPrompt .= "\n";
+                
+                // Current Message Context
+                $contextPrompt .= "STUDENT QUESTION: \"" . $message . "\"\n\n";
+                
+                // Response Guidelines
+                $contextPrompt .= "RESPONSE GUIDELINES:\n";
+                $contextPrompt .= "- Be specific to their performance data and weak/strong areas\n";
+                $contextPrompt .= "- Provide actionable, personalized advice\n";
+                $contextPrompt .= "- Match your tone to their performance level (encouraging for struggling, analytical for improving, sophisticated for high achievers)\n";
+                $contextPrompt .= "- Reference their actual grades and subjects when relevant\n";
+                $contextPrompt .= "- Provide concrete next steps they can take\n\n";
+                
+                // Use custom prompt if provided, otherwise use the context-aware one
+                $finalPrompt = !empty($prompt) ? $prompt : $contextPrompt . "Please provide a helpful, personalized response:";
+                
+                // Execute AI chat response using llama3-8b for better conversational responses
+                $connector = new snowflake_connector();
+                $result = $connector->execute_cortex_query('llama3-8b', $finalPrompt);
+                
+                echo json_encode([
+                    'success' => $result['success'],
+                    'response' => $result['response'],
+                    'model' => $result['model'] ?? 'llama3-8b',
+                    'method' => $result['method'] ?? 'real_snowflake_cortex',
+                    'error' => $result['error'] ?? null,
+                    'fallback' => $result['fallback'] ?? false
+                ]);
+            } else {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Student data not found'
+                ]);
+            }
             break;
             
         default:

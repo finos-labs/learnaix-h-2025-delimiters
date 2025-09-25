@@ -1,0 +1,43 @@
+# Snowflake CLI Configuration Template
+# Copy this file to ~/.snowflake/config.toml and update with your credentials
+
+[connections.default]
+# Your Snowflake account identifier
+account = "your_account_id"
+
+# Your Snowflake username
+user = "your_username"
+
+# Your Snowflake password (consider using environment variables)
+password = "your_password"
+
+# Your Snowflake role
+role = "your_role"
+
+# Your Snowflake database
+database = "your_database"
+
+# Schema to use (usually PUBLIC)
+schema = "PUBLIC"
+
+# Your Snowflake warehouse
+warehouse = "your_warehouse"
+
+# Optional: Additional connection for different environments
+[connections.development]
+account = "your_dev_account"
+user = "your_dev_username"
+password = "your_dev_password"
+role = "your_dev_role"
+database = "your_dev_database"
+schema = "PUBLIC"
+warehouse = "your_dev_warehouse"
+
+[connections.production]
+account = "your_prod_account"
+user = "your_prod_username"
+password = "your_prod_password"
+role = "your_prod_role"
+database = "your_prod_database"
+schema = "PUBLIC"
+warehouse = "your_prod_warehouse"

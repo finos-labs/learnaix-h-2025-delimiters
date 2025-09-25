@@ -18,10 +18,10 @@ class snowflake_connector {
     private $config_path;
     
     public function __construct() {
-        // Get configuration from Moodle settings or use defaults
-        $this->cli_path = get_config('local_learnpath', 'snowflake_cli_path') ?: '/usr/local/bin/snow';
-        $this->connection = get_config('local_learnpath', 'snowflake_connection') ?: 'LEARNAIX_CONNECTION';
-        $this->config_path = get_config('local_learnpath', 'snowflake_config_path') ?: '/opt/snowflake/config';
+        // Get configuration from Moodle settings or environment variables
+        $this->cli_path = get_config('local_learnpath', 'snowflake_cli_path') ?: 'snow';
+        $this->connection = get_config('local_learnpath', 'snowflake_connection') ?: 'default';
+        $this->config_path = get_config('local_learnpath', 'snowflake_config_path') ?: '';
     }
     
     /**
@@ -31,21 +31,25 @@ class snowflake_connector {
         // Use the configured CLI path
         $executable_path = $this->cli_path;
 
-        // For complex SQL queries, write to a temporary file to avoid shell escaping issues
+        // For complex SQL queries, write to a temporary file to avoid escaping issues
         $temp_file = tempnam(sys_get_temp_dir(), 'snowflake_query_') . '.sql';
         file_put_contents($temp_file, $sql);
         
-        // Detect OS and use appropriate command
+        // Build command based on operating system
         if (PHP_OS_FAMILY === 'Windows') {
             // PowerShell command for Windows
-            $command = 'powershell -Command "' .
-                       '$env:SNOWFLAKE_HOME=\'' . $this->config_path . '\'; ' .
-                       '& \'' . $executable_path . '\' sql -f \\"' . $temp_file . '\\" -c ' . $this->connection .
-                       '"';
+            $command = 'powershell -Command "';
+            if (!empty($this->config_path)) {
+                $command .= '$env:SNOWFLAKE_HOME=\'' . $this->config_path . '\'; ';
+            }
+            $command .= '& \'' . $executable_path . '\' sql -f \\"' . $temp_file . '\\" -c ' . $this->connection . '"';
         } else {
             // Unix/Linux command
-            $command = 'export SNOWFLAKE_HOME="' . $this->config_path . '"; ' .
-                       '"' . $executable_path . '" sql -f "' . $temp_file . '" -c ' . $this->connection;
+            $command = '';
+            if (!empty($this->config_path)) {
+                $command .= 'SNOWFLAKE_HOME="' . $this->config_path . '" ';
+            }
+            $command .= escapeshellcmd($executable_path) . ' sql -f ' . escapeshellarg($temp_file) . ' -c ' . escapeshellarg($this->connection);
         }
         
         // Execute the command and capture output
