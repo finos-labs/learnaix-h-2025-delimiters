@@ -16,7 +16,7 @@ This repository was forked from [finos-labs/learnaix-h-2025](https://github.com/
 
 **Technologies**: Moodle Plugin Architecture, Snowflake Cortex AI, PHP, JavaScript, HTML5/CSS3, REST APIs, Khan Academy-inspired UI design.
 
-![AI Study Assistant](./moodle-plugin/local/learnpath/AI%20study%20Assistant.png)
+
 
 ## 🔍 Core Solution Features
 
@@ -70,6 +70,9 @@ LearnPath Navigator is deployed as a Moodle plugin for live demonstration.
 ![Study Resources](StudyMaterial%20Recommedation.png)
 *Curated study materials from Khan Academy, Desmos, PhET, and other platforms*
 
+### AI Study Assistant
+![AI Study Assistant](AI%20study%20Assistant.png)
+*AI-powered study assistant with conversational coaching, study plans, and performance breakdowns*
 ---
 
 ## 🚀 Development Progress
