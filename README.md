@@ -16,6 +16,16 @@ This repository was forked from [finos-labs/learnaix-h-2025](https://github.com/
 
 **Technologies**: Moodle Plugin Architecture, Snowflake Cortex AI, PHP, JavaScript, HTML5/CSS3, REST APIs, Khan Academy-inspired UI design.
 
+![AI Study Assistant](./moodle-plugin/local/learnpath/AI%20study%20Assistant.png)
+
+## 🔍 Core Solution Features
+
+- **Personalized Roadmaps**: AI assembles three actionable learning modules with goals, estimated effort, and embedded study materials for each student.
+- **Dynamic Resources**: Curated Coursera, YouTube, and Khan Academy links refresh automatically for every roadmap iteration.
+- **Live Gradebook Sync**: Direct integration with Moodle gradebook APIs keeps performance dashboards and AI prompts aligned with the latest quiz scores, assignment grades, and activity completions.
+- **Sequential Mastery**: Modules unlock progressively as students mark items complete, reinforcing structured learning journeys.
+- **Cortex-Powered Insights**: Snowflake Cortex AI delivers conversational coaching, study plans, and performance breakdowns inside the plugin.
+
 ## 👥 Team Information
 
 | Field            | Details                               |
